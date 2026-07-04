@@ -33,13 +33,6 @@ SistemaEmergenciaHospitalaria
 └── Program.cs
 ```
 
-## 🚀 Cómo ejecutar el proyecto
-
-1. Clonar el repositorio.
-2. Ejecutar el script de la base de datos.
-3. Configurar la cadena de conexión en `Conexion.cs`.
-4. Ejecutar el proyecto desde Visual Studio.
-
 ## 👥 Integrantes
 
 - Integrante 1
