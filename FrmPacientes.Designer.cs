@@ -37,6 +37,7 @@
             ClientSize = new Size(800, 450);
             Name = "FrmPacientes";
             Text = "Sistema Emergencias Hospitalarias";
+            Load += FrmPacientes_Load;
             ResumeLayout(false);
         }
 
