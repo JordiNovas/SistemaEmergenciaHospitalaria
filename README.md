@@ -35,13 +35,13 @@ SistemaEmergenciaHospitalaria
 
 ## 👥 Integrantes
 
-- Integrante 1
-- Integrante 2
-- Integrante 3
-- Integrante 4
-- Integrante 5
-- Integrante 6
-- Integrante 7
+- Jolfreilyn Amancio Abad (2025-1060)
+- Jordi Alexander Novas Franco (2023-1205)
+- Angel Francisco Rosa Delgado (2025-0014)
+- Esmeralda Tais Soto Escolastico (2024-1861)
+- Gian Perez (2025-1142)
+- Iverson O'neal Vargas De Leon (2024-2512)
+- Alan Enmanuel Bertrand Rosa (2025-1053)
 
 ---
 
