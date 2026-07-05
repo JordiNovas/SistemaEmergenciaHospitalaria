@@ -12,6 +12,7 @@ namespace SistemaEmergenciaHospitalaria.Datos
     {
         private SqlConnection conexion = new SqlConnection(
             "Server=JORDINOVAS\\MSSQLSERVER02;Database=SistemaEmergenciaHospitalaria;Trusted_Connection=True;TrustServerCertificate=True;"
+            //"Server=localhost\\SQL2025;Database=SistemaEmergenciaHospitalaria;User Id=sa;Password=123456;TrustServerCertificate=True;"
         );
 
         public SqlConnection AbrirConexion()
