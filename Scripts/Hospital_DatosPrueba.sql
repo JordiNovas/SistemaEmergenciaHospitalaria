@@ -1,15 +1,14 @@
 
 
+
 /* ============================================================
                 GENESIS EMERGENCY SYSTEM (GES)
       Script de Datos de Prueba - Hospital_DatosPrueba.sql
-                [Datos para realizar pruebas]
+                    [Datos de Prueba]
    ============================================================ */
 
 Use SistemaEmergenciaHospitalaria;
 Go
-
---prueba de inserción de pacientes con diferentes niveles de Triage
 
 -- Paciente crítico (Rojo)
 Exec sp_RegistrarPaciente
@@ -79,14 +78,14 @@ Exec sp_RegistrarPaciente
 -- Ver todos los pacientes registrados (ordenados por prioridad de Triage)
 Exec sp_ObtenerPacientes;
 
+-- Probar obtener paciente por ID
+Exec sp_ObtenerPacientePorId @PacienteID = 1;
+
 -- Probar búsqueda por nombre
-Exec sp_BuscarPaciente @Filtro = 'Pedro';
+Exec sp_BuscarPaciente @Filtro = 'Ana';
 
 -- Probar búsqueda por cédula
 Exec sp_BuscarPaciente @Filtro = '00123456789';
-
--- Probar obtener paciente por ID
-Exec sp_ObtenerPacientePorId @PacienteID = 1;
 
 -- Probar actualización de cliente (Unicamente el nivel de Triage)
 Exec sp_ActualizarPaciente @PacienteID = 2, @NivelTriage = 'Rojo';
@@ -103,3 +102,33 @@ Exec sp_ActualizarPaciente
 
 -- Probar eliminación
 -- Exec sp_EliminarPaciente @PacienteID = 5;
+
+/* ============================================================
+              USUARIOS DE PRUEBA (para el login)
+   ============================================================ */
+
+Exec sp_RegistrarUsuario
+    @Cedula = '00100000001',
+    @NombreCompleto = 'Laura Martinez',
+    @Contrasena = '1234',
+    @Rol = 'Enfermera';
+
+Exec sp_RegistrarUsuario
+    @Cedula = '00100000002',
+    @NombreCompleto = 'Dr. Alan Bertrand',
+    @Contrasena = '1234',
+    @Rol = 'Medico';
+
+Exec sp_RegistrarUsuario
+    @Cedula = '00100000003',
+    @NombreCompleto = 'Admin Sistema',
+    @Contrasena = '1234',
+    @Rol = 'Administrador';
+
+-- Probar el login (debe devolver 1 fila si la contraseña es correcta)
+Exec sp_ValidarLogin @Cedula = '00100000001', @Contrasena = '1234';
+
+-- Probar login con contraseña incorrecta (no debe devolver ninguna fila)
+Exec sp_ValidarLogin @Cedula = '00100000001', @Contrasena = 'incorrecta';
+
+Exec sp_ObtenerUsuarios;

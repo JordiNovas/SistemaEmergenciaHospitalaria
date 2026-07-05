@@ -5,7 +5,7 @@
             Script de Base de Datos - Hospital.sql
    ============================================================ */
 
--- Creacion de la base de datos
+-- Creación de la base de datos
 If Not Exists (Select name From sys.databases Where name = 'SistemaEmergenciaHospitalaria')
 Begin
     Create Database SistemaEmergenciaHospitalaria;
@@ -15,7 +15,7 @@ Go
 Use SistemaEmergenciaHospitalaria;
 Go
 
--- Tabla Paciente
+-- Tabla principal: Paciente
 If Object_id('dbo.Paciente', 'U') Is Not Null
     Drop Table dbo.Paciente;
 Go
@@ -173,5 +173,105 @@ Begin
            FechaHoraLlegada, FechaHoraModificacion, Estado
     From dbo.Paciente
     Where PacienteID = @PacienteID;
+End
+Go
+
+/* ============================================================
+               MÓDULO DE LOGIN (Tabla Usuario)
+   ============================================================ */
+
+-- Tabla de Usuarios
+If Object_id('dbo.Usuario', 'U') Is Not Null
+    Drop Table dbo.Usuario;
+Go
+
+Create Table dbo.Usuario (
+    UsuarioID       Int Identity(1,1) Primary Key,
+    Cedula          Varchar(11)    Not Null Unique,     -- Se usa para iniciar sesión
+    NombreCompleto  Nvarchar(150)  Not Null,
+    ContrasenaHash  Varbinary(64)  Not Null,             -- Contraseña protegida (hash SHA2_256)
+    Rol             Varchar(20)    Not Null
+        Constraint CK_Usuario_Rol
+        Check (Rol In ('Enfermera', 'Medico', 'Administrador')),
+    Activo          Bit            Not Null Default 1,   -- Permite desactivar sin borrar el usuario
+    FechaCreacion   Datetime       Not Null Default Getdate(),
+    UltimoAcceso    Datetime       Null                   -- Se actualiza en cada login exitoso
+);
+Go
+
+-- Registrar un nuevo usuario
+Create Or Alter Procedure sp_RegistrarUsuario
+    @Cedula Varchar(11),
+    @NombreCompleto Nvarchar(150),
+    @Contrasena Nvarchar(100),   -- Se recibe en texto plano y se hashea aquí mismo
+    @Rol Varchar(20)
+As
+Begin
+    Set Nocount On;
+
+    -- Limpiar espacios accidentales
+    Set @Cedula = Ltrim(Rtrim(@Cedula));
+    Set @NombreCompleto = Ltrim(Rtrim(@NombreCompleto));
+
+    -- Validar que la contraseña tenga un mínimo de 4 caracteres
+    If Len(Ltrim(Rtrim(@Contrasena))) < 4
+    Begin
+        Throw 50001, 'La contraseña debe tener al menos 4 caracteres.', 1;
+        Return;
+    End
+
+    -- Validar que la cédula no esté ya registrada (mensaje claro en vez de error crudo de SQL)
+    If Exists (Select 1 From dbo.Usuario Where Cedula = @Cedula)
+    Begin
+        Throw 50002, 'Ya existe un usuario registrado con esa cédula.', 1;
+        Return;
+    End
+
+    Insert Into dbo.Usuario (Cedula, NombreCompleto, ContrasenaHash, Rol)
+    Values (@Cedula, @NombreCompleto, HashBytes('SHA2_256', @Contrasena), @Rol);
+
+    Select Scope_identity() As NuevoUsuarioID;
+End
+Go
+
+-- Validar login (recibe cédula + contraseña en texto plano, compara con el hash guardado)
+Create Or Alter Procedure sp_ValidarLogin
+    @Cedula Varchar(11),
+    @Contrasena Nvarchar(100)
+As
+Begin
+    Set Nocount On;
+
+    Set @Cedula = Ltrim(Rtrim(@Cedula));
+
+    Declare @UsuarioID Int;
+
+    Select @UsuarioID = UsuarioID
+    From dbo.Usuario
+    Where Cedula = @Cedula
+      And ContrasenaHash = HashBytes('SHA2_256', @Contrasena)
+      And Activo = 1;
+
+    If @UsuarioID Is Not Null
+    Begin
+        Update dbo.Usuario Set UltimoAcceso = Getdate() Where UsuarioID = @UsuarioID;
+
+        Select UsuarioID, Cedula, NombreCompleto, Rol, UltimoAcceso
+        From dbo.Usuario
+        Where UsuarioID = @UsuarioID;
+    End
+    -- Si @UsuarioID queda Null, no se devuelve ninguna fila: cédula o contraseña incorrectas,
+    -- o el usuario está desactivado (Activo = 0)
+End
+Go
+
+-- Obtener todos los usuarios (para pantalla de administración)
+Create Or Alter Procedure sp_ObtenerUsuarios
+As
+Begin
+    Set Nocount On;
+    Select UsuarioID, Cedula, NombreCompleto, Rol, Activo, FechaCreacion, UltimoAcceso
+    From dbo.Usuario
+    Order By NombreCompleto Asc;
 End
 Go
