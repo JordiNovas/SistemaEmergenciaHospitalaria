@@ -24,7 +24,7 @@ Go
 
 Create Table dbo.Paciente (
     PacienteID          Int Identity(1,1) Primary Key,
-    Cedula              Varchar(11)    Not Null Unique,   -- Solo numeros, sin guiones (ej: 00112345678)
+    Cedula              Varchar(11)    Not Null Unique,   -- Solo numeros, sin guiones
     NombreCompleto      Nvarchar(150)  Not Null,
     FechaNacimiento     Date           Not Null,
     TipoSangre          Varchar(3)     Null
@@ -34,7 +34,13 @@ Create Table dbo.Paciente (
         Constraint CK_Paciente_Sexo
         Check (Sexo In ('Masculino', 'Femenino')),
     TelefonoContacto    Varchar(15)    Null,
-    Alergias            Nvarchar(255)  Null,   -- Dato persistente: no cambia entre visitas
+    Alergias            Nvarchar(255)  Null,   -- Dato persistente
+    Peso                Decimal(5,1)   Null
+        Constraint CK_Paciente_Peso
+        Check (Peso Between 1 And 800),        -- libras
+    Altura              Decimal(4,2)   Null
+        Constraint CK_Paciente_Altura
+        Check (Altura Between 0.50 And 2.80),  -- metros
     FechaRegistro       Datetime       Not Null Default Getdate()
 );
 Go
@@ -51,7 +57,6 @@ Create Table dbo.Consulta (
         Constraint FK_Consulta_Paciente References dbo.Paciente(PacienteID)
         On Delete Cascade,
 
-    -- Entrada clinica (boceto)
     FechaHoraLlegada    Datetime       Not Null Default Getdate(),
     ModoLlegada         Varchar(30)    Null
         Constraint CK_Consulta_ModoLlegada
@@ -61,25 +66,23 @@ Create Table dbo.Consulta (
         Check (NivelTriage In ('Rojo', 'Naranja', 'Amarillo', 'Verde', 'Azul')),
     MotivoConsulta      Nvarchar(1000) Null,
 
-    -- Signos vitales (se registran durante el triage)
-    PresionArterial         Varchar(15)   Null   -- Formato "sistolica/diastolica", ej: "120/80"
+    PresionArterial         Varchar(15)   Null
         Constraint CK_Consulta_PresionArterial
         Check (PresionArterial Like '[0-9][0-9][0-9]/[0-9][0-9]' Or PresionArterial Like '[0-9][0-9]/[0-9][0-9]'),
-    FrecuenciaCardiaca      Int           Null   -- lpm
+    FrecuenciaCardiaca      Int           Null
         Constraint CK_Consulta_FrecuenciaCardiaca
         Check (FrecuenciaCardiaca Between 20 And 250),
-    SaturacionOxigeno       Int           Null   -- %
+    SaturacionOxigeno       Int           Null
         Constraint CK_Consulta_SaturacionOxigeno
         Check (SaturacionOxigeno Between 0 And 100),
-    Temperatura             Decimal(4,1)  Null   -- C
+    Temperatura             Decimal(4,1)  Null
         Constraint CK_Consulta_Temperatura
         Check (Temperatura Between 25.0 And 45.0),
-    FrecuenciaRespiratoria  Int           Null   -- rpm
+    FrecuenciaRespiratoria  Int           Null
         Constraint CK_Consulta_FrecuenciaRespiratoria
         Check (FrecuenciaRespiratoria Between 5 And 80),
 
-    -- Control de tiempos y estado
-    Estado                  Varchar(20)   Not Null Default 'En espera', -- En espera / En atencion / Atendido
+    Estado                  Varchar(20)   Not Null Default 'En espera',
     FechaHoraModificacion   Datetime      Null
 );
 Go
@@ -91,7 +94,7 @@ Go
    Procedimientos: Paciente (datos personales)
    ============================================================ */
 
--- Registrar paciente (solo datos personales)
+-- Registrar paciente
 Create Or Alter Procedure sp_RegistrarPaciente
     @Cedula Varchar(11),
     @NombreCompleto Nvarchar(150),
@@ -100,6 +103,8 @@ Create Or Alter Procedure sp_RegistrarPaciente
     @Sexo Varchar(10) = Null,
     @TelefonoContacto Varchar(15) = Null,
     @Alergias Nvarchar(255) = Null,
+    @Peso Decimal(5,1) = Null,      -- libras
+    @Altura Decimal(4,2) = Null,    -- metros
     @NuevoPacienteID Int Output
 As
 Begin
@@ -112,14 +117,14 @@ Begin
         Return;
     End
 
-    Insert Into dbo.Paciente (Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias)
-    Values (@Cedula, @NombreCompleto, @FechaNacimiento, @TipoSangre, @Sexo, @TelefonoContacto, @Alergias);
+    Insert Into dbo.Paciente (Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias, Peso, Altura)
+    Values (@Cedula, @NombreCompleto, @FechaNacimiento, @TipoSangre, @Sexo, @TelefonoContacto, @Alergias, @Peso, @Altura);
 
     Set @NuevoPacienteID = Scope_identity();
 End
 Go
 
--- Actualizar datos personales del paciente
+-- Actualizar datos personales (cada campo se actualiza solo si se pasa un valor no NULL)
 Create Or Alter Procedure sp_ActualizarPaciente
     @PacienteID Int,
     @NombreCompleto Nvarchar(150) = Null,
@@ -127,7 +132,9 @@ Create Or Alter Procedure sp_ActualizarPaciente
     @TipoSangre Varchar(3) = Null,
     @Sexo Varchar(10) = Null,
     @TelefonoContacto Varchar(15) = Null,
-    @Alergias Nvarchar(255) = Null
+    @Alergias Nvarchar(255) = Null,
+    @Peso Decimal(5,1) = Null,
+    @Altura Decimal(4,2) = Null
 As
 Begin
     Set Nocount On;
@@ -137,7 +144,9 @@ Begin
         TipoSangre = Isnull(@TipoSangre, TipoSangre),
         Sexo = Isnull(@Sexo, Sexo),
         TelefonoContacto = Isnull(@TelefonoContacto, TelefonoContacto),
-        Alergias = Isnull(@Alergias, Alergias)
+        Alergias = Isnull(@Alergias, Alergias),
+        Peso = Isnull(@Peso, Peso),
+        Altura = Isnull(@Altura, Altura)
     Where PacienteID = @PacienteID;
 End
 Go
@@ -152,25 +161,27 @@ Begin
 End
 Go
 
--- Obtener un paciente por su ID
+-- Obtener un paciente por su ID (incluye Peso y Altura)
 Create Or Alter Procedure sp_ObtenerPacientePorId
     @PacienteID Int
 As
 Begin
     Set Nocount On;
-    Select PacienteID, Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias, FechaRegistro
+    Select PacienteID, Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias,
+           Peso, Altura, FechaRegistro
     From dbo.Paciente
     Where PacienteID = @PacienteID;
 End
 Go
 
--- Buscar paciente (por cedula o nombre, sin importar tildes)
+-- Buscar paciente (por cedula o nombre, sin importar tildes) incluye Peso y Altura
 Create Or Alter Procedure sp_BuscarPaciente
     @Filtro Nvarchar(150)
 As
 Begin
     Set Nocount On;
-    Select PacienteID, Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias, FechaRegistro
+    Select PacienteID, Cedula, NombreCompleto, FechaNacimiento, TipoSangre, Sexo, TelefonoContacto, Alergias,
+           Peso, Altura, FechaRegistro
     From dbo.Paciente
     Where Cedula Like '%' + @Filtro + '%'
        Or NombreCompleto Collate Latin1_General_CI_AI Like '%' + @Filtro + '%' Collate Latin1_General_CI_AI;
@@ -255,13 +266,14 @@ End
 Go
 
 -- Obtener todas las consultas (sala de espera), con datos del paciente incluidos,
--- ordenadas por prioridad de Triage
+-- ordenadas por prioridad de Triage (incluye Peso y Altura)
 Create Or Alter Procedure sp_ObtenerConsultas
 As
 Begin
     Set Nocount On;
     Select c.ConsultaID, c.PacienteID, p.Cedula, p.NombreCompleto, p.FechaNacimiento,
            p.TipoSangre, p.Sexo, p.TelefonoContacto, p.Alergias,
+           p.Peso, p.Altura,
            c.FechaHoraLlegada, c.ModoLlegada, c.NivelTriage, c.MotivoConsulta,
            c.PresionArterial, c.FrecuenciaCardiaca, c.SaturacionOxigeno, c.Temperatura, c.FrecuenciaRespiratoria,
            c.Estado, c.FechaHoraModificacion
@@ -280,7 +292,7 @@ Begin
 End
 Go
 
--- Obtener una consulta por su ID (para pantalla de edicion/atencion)
+-- Obtener una consulta por su ID (para pantalla de edicion/atencion) incluye Peso y Altura
 Create Or Alter Procedure sp_ObtenerConsultaPorId
     @ConsultaID Int
 As
@@ -288,6 +300,7 @@ Begin
     Set Nocount On;
     Select c.ConsultaID, c.PacienteID, p.Cedula, p.NombreCompleto, p.FechaNacimiento,
            p.TipoSangre, p.Sexo, p.TelefonoContacto, p.Alergias,
+           p.Peso, p.Altura,
            c.FechaHoraLlegada, c.ModoLlegada, c.NivelTriage, c.MotivoConsulta,
            c.PresionArterial, c.FrecuenciaCardiaca, c.SaturacionOxigeno, c.Temperatura, c.FrecuenciaRespiratoria,
            c.Estado, c.FechaHoraModificacion
@@ -387,7 +400,6 @@ Begin
 End
 Go
 
--- Actualizar usuario (nombre, rol o estado activo/inactivo; la contrasena se actualiza aparte)
 Create Or Alter Procedure sp_ActualizarUsuario
     @UsuarioID Int,
     @NombreCompleto Nvarchar(150) = Null,
@@ -404,7 +416,6 @@ Begin
 End
 Go
 
--- Cambiar la contrasena de un usuario (procedimiento aparte por seguridad)
 Create Or Alter Procedure sp_CambiarContrasenaUsuario
     @UsuarioID Int,
     @NuevaContrasena Nvarchar(100)
@@ -424,7 +435,6 @@ Begin
 End
 Go
 
--- Eliminar usuario
 Create Or Alter Procedure sp_EliminarUsuario
     @UsuarioID Int
 As

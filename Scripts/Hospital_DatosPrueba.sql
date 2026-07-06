@@ -16,6 +16,8 @@ Exec sp_RegistrarPaciente
     @Sexo = 'Femenino',
     @TelefonoContacto = '809-555-0103',
     @Alergias = 'Ninguna conocida',
+    @Peso = 143.0,          -- libras
+    @Altura = 1.65,         -- metros
     @NuevoPacienteID = @PacienteID Output;
 
 Exec sp_RegistrarConsulta
@@ -34,6 +36,8 @@ Exec sp_RegistrarPaciente
     @Sexo = 'Masculino',
     @TelefonoContacto = '809-555-0111',
     @Alergias = 'Ninguna',
+    @Peso = 176.0,
+    @Altura = 1.75,
     @NuevoPacienteID = @PacienteID Output;
 
 Exec sp_RegistrarConsulta
@@ -57,6 +61,8 @@ Exec sp_RegistrarPaciente
     @Sexo = 'Masculino',
     @TelefonoContacto = '809-555-0122',
     @Alergias = 'Penicilina',
+    @Peso = 154.0,
+    @Altura = 1.70,
     @NuevoPacienteID = @PacienteID Output;
 
 Exec sp_RegistrarConsulta
@@ -89,15 +95,15 @@ Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 Exec sp_ActualizarConsulta @ConsultaID = 1, @Estado = 'En atencion';
 Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 
--- Actualizar SOLO el Nivel de Triage (ej: el paciente empeoro y se reclasifica)
+-- Actualizar SOLO el Nivel de Triage
 Exec sp_ActualizarConsulta @ConsultaID = 1, @NivelTriage = 'Rojo';
 Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 
--- Actualizar SOLO el Motivo de Consulta (correccion de texto)
+-- Actualizar SOLO el Motivo de Consulta
 Exec sp_ActualizarConsulta @ConsultaID = 1, @MotivoConsulta = 'Dolor abdominal intenso, ahora con vomitos.';
 Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 
--- Actualizar SOLO los signos vitales (Presion y Frecuencia Cardiaca), sin tocar Triage/Estado/Motivo
+-- Actualizar SOLO los signos vitales (Presion y Frecuencia Cardiaca)
 Exec sp_ActualizarConsulta @ConsultaID = 1, @PresionArterial = '140/90', @FrecuenciaCardiaca = 105;
 Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 
@@ -108,7 +114,7 @@ Exec sp_ObtenerConsultaPorId @ConsultaID = 1;
 -- Datos personales antes de actualizar (Paciente de Ana Lucia, PacienteID = 1)
 Exec sp_ObtenerPacientePorId @PacienteID = 1;
 
--- Actualizar SOLO el Telefono de Contacto (no debe borrar Alergias, TipoSangre, etc.)
+-- Actualizar SOLO el Telefono de Contacto
 Exec sp_ActualizarPaciente @PacienteID = 1, @TelefonoContacto = '809-555-9999';
 Exec sp_ObtenerPacientePorId @PacienteID = 1;
 
@@ -116,8 +122,21 @@ Exec sp_ObtenerPacientePorId @PacienteID = 1;
 Exec sp_ActualizarPaciente @PacienteID = 1, @Alergias = 'Penicilina, Latex';
 Exec sp_ObtenerPacientePorId @PacienteID = 1;
 
--- Actualizar SOLO el Nombre Completo (ej: correccion de un error de tipeo)
+-- Actualizar SOLO el Nombre Completo
 Exec sp_ActualizarPaciente @PacienteID = 1, @NombreCompleto = 'Ana Lucía Jiménez C.';
+Exec sp_ObtenerPacientePorId @PacienteID = 1;
+
+-- Pruebas de actualización individual de Peso y Altura
+-- Actualizar SOLO el Peso
+Exec sp_ActualizarPaciente @PacienteID = 1, @Peso = 150.5;
+Exec sp_ObtenerPacientePorId @PacienteID = 1;
+
+-- Actualizar SOLO la Altura
+Exec sp_ActualizarPaciente @PacienteID = 1, @Altura = 1.67;
+Exec sp_ObtenerPacientePorId @PacienteID = 1;
+
+-- Actualizar ambos a la vez
+Exec sp_ActualizarPaciente @PacienteID = 1, @Peso = 148.0, @Altura = 1.68;
 Exec sp_ObtenerPacientePorId @PacienteID = 1;
 
 /* ============================================================
