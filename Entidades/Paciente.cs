@@ -4,15 +4,19 @@ namespace SistemaEmergenciaHospitalaria.Entidades
 {
     public class Paciente
     {
-        public int IdPaciente { get; set; }
+        public int PacienteID { get; set; }
         public string Cedula { get; set; } = string.Empty;
-        public string? NSS { get; set; } // El NSS puede ser opcional (acepta NULL)
-        public string Nombre { get; set; } = string.Empty;
-        public string Apellido { get; set; } = string.Empty;
-        public DateTime FechaNacimiento { get; set; }
-        public string Sexo { get; set; } = string.Empty;
-        public string MotivoConsulta { get; set; } = string.Empty;
-        public DateTime HoraLlegada { get; set; }
-        public string Estado { get; set; } = string.Empty;
+        public string NombreCompleto { get; set; } = string.Empty;
+        public DateTime? FechaNacimiento { get; set; } // Puede ser nulo según su script
+        public string? Alergias { get; set; }
+        public string? PresionArterial { get; set; }
+        public int? FrecuenciaCardiaca { get; set; }
+        public int? SaturacionOxigeno { get; set; }
+        public decimal? Temperatura { get; set; }
+        public int? FrecuenciaRespiratoria { get; set; }
+        public string? NivelTriage { get; set; }
+        public DateTime FechaHoraLlegada { get; set; }
+        public DateTime? FechaHoraModificacion { get; set; }
+        public string Estado { get; set; } = "En espera";
     }
 }

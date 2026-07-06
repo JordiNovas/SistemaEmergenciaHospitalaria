@@ -1,60 +1,58 @@
 ﻿using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using SistemaEmergenciaHospitalaria.Entidades; // Permite usar la entidad Paciente
+using SistemaEmergenciaHospitalaria.Entidades;
 
 namespace SistemaEmergenciaHospitalaria.Negocio
 {
     public class PacienteBLL
     {
-        // Cadena de conexión corregida apuntando a tu base de datos local
-        private readonly string connectionString = "Server=localhost;Database=HospitalGES_DB;Trusted_Connection=True;TrustServerCertificate=True;";
+        private readonly string connectionString = "Server=localhost;Database=SistemaEmergenciaHospitalaria;Trusted_Connection=True;TrustServerCertificate=True;";
 
         // 1. REGISTRAR PACIENTE
         public bool RegistrarPaciente(Paciente paciente)
         {
-            string query = "INSERT INTO Paciente (Cedula, NSS, Nombre, Apellido, FechaNacimiento, Sexo, MotivoConsulta, HoraLlegada, Estado) " +
-                           "VALUES (@Cedula, @NSS, @Nombre, @Apellido, @FechaNacimiento, @Sexo, @MotivoConsulta, @HoraLlegada, @Estado)";
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand("sp_RegistrarPaciente", conn))
                 {
-                    cmd.Parameters.AddWithValue("@Cedula", paciente.Cedula);
-                    cmd.Parameters.AddWithValue("@NSS", string.IsNullOrEmpty(paciente.NSS) ? (object)DBNull.Value : paciente.NSS);
-                    cmd.Parameters.AddWithValue("@Nombre", paciente.Nombre);
-                    cmd.Parameters.AddWithValue("@Apellido", paciente.Apellido);
-                    cmd.Parameters.AddWithValue("@FechaNacimiento", paciente.FechaNacimiento);
-                    cmd.Parameters.AddWithValue("@Sexo", paciente.Sexo);
-                    cmd.Parameters.AddWithValue("@MotivoConsulta", paciente.MotivoConsulta);
-                    cmd.Parameters.AddWithValue("@HoraLlegada", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@Estado", "Activo");
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@Cedula", paciente.Cedula ?? string.Empty);
+                    cmd.Parameters.AddWithValue("@NombreCompleto", paciente.NombreCompleto ?? string.Empty);
+                    cmd.Parameters.AddWithValue("@FechaNacimiento", (object?)paciente.FechaNacimiento ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Alergias", (object?)paciente.Alergias ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@PresionArterial", (object?)paciente.PresionArterial ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FrecuenciaCardiaca", (object?)paciente.FrecuenciaCardiaca ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SaturacionOxigeno", (object?)paciente.SaturacionOxigeno ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Temperatura", (object?)paciente.Temperatura ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FrecuenciaRespiratoria", (object?)paciente.FrecuenciaRespiratoria ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@NivelTriage", (object?)paciente.NivelTriage ?? DBNull.Value);
 
                     try
                     {
                         conn.Open();
-                        int filas = cmd.ExecuteNonQuery();
-                        return filas > 0;
+                        object? resultado = cmd.ExecuteScalar();
+                        return resultado != null;
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.Forms.MessageBox.Show("Error en Base de Datos (Insertar): " + ex.Message);
+                        System.Windows.Forms.MessageBox.Show("Error en sp_RegistrarPaciente: " + ex.Message);
                         return false;
                     }
                 }
             }
         }
 
-        // 2. OBTENER PACIENTES (Para el DataGridView)
+        // 2. OBTENER PACIENTES
         public DataTable ObtenerPacientes()
         {
             DataTable tabla = new DataTable();
-            string query = "SELECT IdPaciente, Cedula, NSS, Nombre, Apellido, FechaNacimiento, Sexo, MotivoConsulta, HoraLlegada, Estado FROM Paciente WHERE Estado != 'Inactivo'";
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand("sp_ObtenerPacientes", conn))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
                     try
                     {
                         conn.Open();
@@ -65,7 +63,7 @@ namespace SistemaEmergenciaHospitalaria.Negocio
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.Forms.MessageBox.Show("Error al obtener pacientes: " + ex.Message);
+                        System.Windows.Forms.MessageBox.Show("Error en sp_ObtenerPacientes: " + ex.Message);
                     }
                 }
             }
@@ -75,23 +73,23 @@ namespace SistemaEmergenciaHospitalaria.Negocio
         // 3. ACTUALIZAR PACIENTE
         public bool ActualizarPaciente(Paciente paciente)
         {
-            string query = "UPDATE Paciente SET Cedula = @Cedula, NSS = @NSS, Nombre = @Nombre, " +
-                           "Apellido = @Apellido, FechaNacimiento = @FechaNacimiento, Sexo = @Sexo, " +
-                           "MotivoConsulta = @MotivoConsulta, Estado = @Estado WHERE IdPaciente = @IdPaciente";
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand("sp_ActualizarPaciente", conn))
                 {
-                    cmd.Parameters.AddWithValue("@IdPaciente", paciente.IdPaciente);
-                    cmd.Parameters.AddWithValue("@Cedula", paciente.Cedula);
-                    cmd.Parameters.AddWithValue("@NSS", string.IsNullOrEmpty(paciente.NSS) ? (object)DBNull.Value : paciente.NSS);
-                    cmd.Parameters.AddWithValue("@Nombre", paciente.Nombre);
-                    cmd.Parameters.AddWithValue("@Apellido", paciente.Apellido);
-                    cmd.Parameters.AddWithValue("@FechaNacimiento", paciente.FechaNacimiento);
-                    cmd.Parameters.AddWithValue("@Sexo", paciente.Sexo);
-                    cmd.Parameters.AddWithValue("@MotivoConsulta", paciente.MotivoConsulta);
-                    cmd.Parameters.AddWithValue("@Estado", paciente.Estado);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@PacienteID", paciente.PacienteID);
+                    cmd.Parameters.AddWithValue("@NombreCompleto", paciente.NombreCompleto ?? string.Empty);
+                    cmd.Parameters.AddWithValue("@FechaNacimiento", (object?)paciente.FechaNacimiento ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Alergias", (object?)paciente.Alergias ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@PresionArterial", (object?)paciente.PresionArterial ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FrecuenciaCardiaca", (object?)paciente.FrecuenciaCardiaca ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@SaturacionOxigeno", (object?)paciente.SaturacionOxigeno ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Temperatura", (object?)paciente.Temperatura ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FrecuenciaRespiratoria", (object?)paciente.FrecuenciaRespiratoria ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@NivelTriage", (object?)paciente.NivelTriage ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Estado", paciente.Estado ?? "En espera");
 
                     try
                     {
@@ -101,23 +99,22 @@ namespace SistemaEmergenciaHospitalaria.Negocio
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.Forms.MessageBox.Show("Error al actualizar: " + ex.Message);
+                        System.Windows.Forms.MessageBox.Show("Error en sp_ActualizarPaciente: " + ex.Message);
                         return false;
                     }
                 }
             }
         }
 
-        // 4. ELIMINAR PACIENTE (Borrado Lógico)
-        public bool ElminarPaciente(int idPaciente)
+        // 4. ELIMINAR PACIENTE
+        public bool EliminarPaciente(int idPaciente)
         {
-            string query = "UPDATE Paciente SET Estado = 'Inactivo' WHERE IdPaciente = @IdPaciente";
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand("sp_EliminarPaciente", conn))
                 {
-                    cmd.Parameters.AddWithValue("@IdPaciente", idPaciente);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@PacienteID", idPaciente);
 
                     try
                     {
@@ -127,7 +124,7 @@ namespace SistemaEmergenciaHospitalaria.Negocio
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.Forms.MessageBox.Show("Error al eliminar: " + ex.Message);
+                        System.Windows.Forms.MessageBox.Show("Error en sp_EliminarPaciente: " + ex.Message);
                         return false;
                     }
                 }
