@@ -1,5 +1,3 @@
-
-
 /* ============================================================
    Sistema de Emergencia Hospitalaria - Script de Base de Datos
    ============================================================ */
@@ -15,7 +13,7 @@ Use SistemaEmergenciaHospitalaria;
 Go
 
 /* ============================================================
-   Tabla Paciente (Datos personales)
+   Tabla Paciente (Datos personales - se registra una sola vez)
    ============================================================ */
 If Object_id('dbo.Consulta', 'U') Is Not Null
     Drop Table dbo.Consulta;
@@ -26,7 +24,7 @@ Go
 
 Create Table dbo.Paciente (
     PacienteID          Int Identity(1,1) Primary Key,
-    Cedula              Varchar(11)    Not Null Unique,   -- Solo numeros, sin guion
+    Cedula              Varchar(11)    Not Null Unique,   -- Solo numeros, sin guiones (ej: 00112345678)
     NombreCompleto      Nvarchar(150)  Not Null,
     FechaNacimiento     Date           Not Null,
     TipoSangre          Varchar(3)     Null
@@ -36,7 +34,7 @@ Create Table dbo.Paciente (
         Constraint CK_Paciente_Sexo
         Check (Sexo In ('Masculino', 'Femenino')),
     TelefonoContacto    Varchar(15)    Null,
-    Alergias            Nvarchar(255)  Null,   -- Dato persistente
+    Alergias            Nvarchar(255)  Null,   -- Dato persistente: no cambia entre visitas
     FechaRegistro       Datetime       Not Null Default Getdate()
 );
 Go
@@ -45,7 +43,7 @@ Create Index IX_Paciente_NombreCompleto On dbo.Paciente (NombreCompleto);
 Go
 
 /* ============================================================
-   Tabla Consulta (Entrada clinica / Triage)
+   Tabla Consulta (Entrada clinica / Triage - una fila por visita)
    ============================================================ */
 Create Table dbo.Consulta (
     ConsultaID          Int Identity(1,1) Primary Key,
@@ -53,7 +51,7 @@ Create Table dbo.Consulta (
         Constraint FK_Consulta_Paciente References dbo.Paciente(PacienteID)
         On Delete Cascade,
 
-    -- Entrada clinica
+    -- Entrada clinica (boceto)
     FechaHoraLlegada    Datetime       Not Null Default Getdate(),
     ModoLlegada         Varchar(30)    Null
         Constraint CK_Consulta_ModoLlegada
@@ -64,11 +62,21 @@ Create Table dbo.Consulta (
     MotivoConsulta      Nvarchar(1000) Null,
 
     -- Signos vitales (se registran durante el triage)
-    PresionArterial         Varchar(15)   Null,   -- Ej: "120/80"
-    FrecuenciaCardiaca      Int           Null,   -- lpm
-    SaturacionOxigeno       Int           Null,   -- %
-    Temperatura             Decimal(4,1)  Null,   -- C
-    FrecuenciaRespiratoria  Int           Null,   -- rpm
+    PresionArterial         Varchar(15)   Null   -- Formato "sistolica/diastolica", ej: "120/80"
+        Constraint CK_Consulta_PresionArterial
+        Check (PresionArterial Like '[0-9][0-9][0-9]/[0-9][0-9]' Or PresionArterial Like '[0-9][0-9]/[0-9][0-9]'),
+    FrecuenciaCardiaca      Int           Null   -- lpm
+        Constraint CK_Consulta_FrecuenciaCardiaca
+        Check (FrecuenciaCardiaca Between 20 And 250),
+    SaturacionOxigeno       Int           Null   -- %
+        Constraint CK_Consulta_SaturacionOxigeno
+        Check (SaturacionOxigeno Between 0 And 100),
+    Temperatura             Decimal(4,1)  Null   -- C
+        Constraint CK_Consulta_Temperatura
+        Check (Temperatura Between 25.0 And 45.0),
+    FrecuenciaRespiratoria  Int           Null   -- rpm
+        Constraint CK_Consulta_FrecuenciaRespiratoria
+        Check (FrecuenciaRespiratoria Between 5 And 80),
 
     -- Control de tiempos y estado
     Estado                  Varchar(20)   Not Null Default 'En espera', -- En espera / En atencion / Atendido
