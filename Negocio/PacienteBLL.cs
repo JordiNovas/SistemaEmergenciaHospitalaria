@@ -101,10 +101,10 @@ namespace SistemaEmergenciaHospitalaria.Negocio
             return dt;
         }
 
-        // 
         // MÓDULO DE CONSULTAS (SALA DE ESPERA / TRIAGE)
-        // 
 
+
+        //Metodo Registra Consulta
         public int RegistrarConsulta(Consulta consulta)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -121,6 +121,9 @@ namespace SistemaEmergenciaHospitalaria.Negocio
                     cmd.Parameters.AddWithValue("@SaturacionOxigeno", (object?)consulta.SaturacionOxigeno ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Temperatura", (object?)consulta.Temperatura ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@FrecuenciaRespiratoria", (object?)consulta.FrecuenciaRespiratoria ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Peso", (object?)consulta.Peso ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Talla", (object?)consulta.Talla ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Observaciones", (object?)consulta.Observaciones ?? DBNull.Value);
 
                     SqlParameter outputId = new SqlParameter("@NuevaConsultaID", SqlDbType.Int)
                     {
