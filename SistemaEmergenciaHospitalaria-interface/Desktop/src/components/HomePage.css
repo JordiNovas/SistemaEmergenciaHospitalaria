@@ -1,0 +1,277 @@
+.home {
+  padding: 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.home__welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.home__greeting {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.home__greeting-name { color: #3b82f6; }
+
+.home__greeting-role { font-size: 0.85rem; color: #64748b; }
+
+.home__date {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-align: right;
+}
+
+.home__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.home__stat-card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.home__stat-icon { display: flex; }
+
+.home__stat-info { display: flex; flex-direction: column; }
+
+.home__stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.home__stat-label { font-size: 0.8rem; color: #64748b; }
+
+.home__section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+/* Consultas */
+.home__consultas { margin-bottom: 2.5rem; }
+
+.home__consultas-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.home__empty-consultas {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.home__empty-action {
+  margin-top: 0.75rem;
+  background: none;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.home__empty-action:hover { background: #eff6ff; }
+
+.home__consultas-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.home__consultas-column {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  border-top: 3px solid;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home__column-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.home__column-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.home__column-list {
+  flex: 1;
+  min-height: 100px;
+  padding: 0.5rem;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.home__column-empty { padding: 1.5rem; text-align: center; }
+
+.home__consulta-card {
+  padding: 0.75rem;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: box-shadow 0.2s;
+}
+.home__consulta-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+
+.home__consulta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.home__triage-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.home__consulta-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home__consulta-meta {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home__consulta-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home__consulta-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.home__status-btn {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.home__status-btn:hover { opacity: 0.85; }
+
+.home__status-btn--attention {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+
+.home__status-btn--done {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Action cards */
+.home__action-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.home__action-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.home__action-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.home__action-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.home__action-info { flex: 1; }
+.home__action-info h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+.home__action-info p { font-size: 0.8rem; color: #64748b; }
+
+.home__action-arrow {
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.home__action-card:hover .home__action-arrow { transform: translateX(4px); }
