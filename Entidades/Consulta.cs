@@ -22,6 +22,7 @@ namespace SistemaEmergenciaHospitalaria.Entidades
         public string? Observaciones { get; set; } // Para las notas adicionales del final
 
         public string Estado { get; set; } = "En espera"; // 'En espera', 'En atencion', 'Atendido'
+
         public DateTime? FechaHoraModificacion { get; set; }
     }
 }

@@ -1,7 +1,9 @@
-﻿using System;
-using System.Data;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+using SistemaEmergenciaHospitalaria.Datos;
 using SistemaEmergenciaHospitalaria.Entidades;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace SistemaEmergenciaHospitalaria.Negocio
 {
@@ -40,7 +42,7 @@ namespace SistemaEmergenciaHospitalaria.Negocio
         }
 
         // MÓDULO DE PACIENTES
-        
+
         public int RegistrarPaciente(Paciente paciente)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -146,6 +148,7 @@ namespace SistemaEmergenciaHospitalaria.Negocio
             }
         }
 
+        //Metodo Obtener Sala De Espera
         public DataTable ObtenerSalaEspera()
         {
             DataTable dt = new DataTable();
@@ -171,6 +174,7 @@ namespace SistemaEmergenciaHospitalaria.Negocio
             return dt;
         }
 
+        //Metodo Actualizar las consultas
         public bool ActualizarConsulta(Consulta consulta)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -201,6 +205,62 @@ namespace SistemaEmergenciaHospitalaria.Negocio
                         return false;
                     }
                 }
+            }
+        }
+
+
+        public List<Consulta> ObtenerConsultasPorFecha(DateTime fecha)
+        {
+            List<Consulta> lista = new List<Consulta>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+
+                string query = "SELECT * FROM Consulta WHERE CAST(FechaHoraLlegada AS DATE) = CAST(@Fecha AS DATE)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Fecha", fecha.Date);
+
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        lista.Add(new Consulta
+                        {
+                            ConsultaID = Convert.ToInt32(reader["ConsultaID"]),
+                            PacienteID = Convert.ToInt32(reader["PacienteID"]),
+                            FechaHoraLlegada = Convert.ToDateTime(reader["FechaHoraLlegada"]),
+                            ModoLlegada = reader["ModoLlegada"].ToString(),
+                            NivelTriage = reader["NivelTriage"].ToString(),
+                            MotivoConsulta = reader["MotivoConsulta"].ToString(),
+                            PresionArterial = reader["PresionArterial"]?.ToString(),
+                            FrecuenciaCardiaca = reader["FrecuenciaCardiaca"] != DBNull.Value ? Convert.ToInt32(reader["FrecuenciaCardiaca"]) : null,
+                            SaturacionOxigeno = reader["SaturacionOxigeno"] != DBNull.Value ? Convert.ToInt32(reader["SaturacionOxigeno"]) : null,
+                            Temperatura = reader["Temperatura"] != DBNull.Value ? Convert.ToDecimal(reader["Temperatura"]) : null,
+                            FrecuenciaRespiratoria = reader["FrecuenciaRespiratoria"] != DBNull.Value ? Convert.ToInt32(reader["FrecuenciaRespiratoria"]) : null,
+                            Peso = reader["Peso"] != DBNull.Value ? Convert.ToDecimal(reader["Peso"]) : null,
+                            Talla = reader["Talla"] != DBNull.Value ? Convert.ToDecimal(reader["Talla"]) : null,
+                            Observaciones = reader["Observaciones"]?.ToString(),
+                            Estado = reader["Estado"].ToString() ?? "En espera"
+                        });
+                    }
+                }
+
+            }
+            return lista;
+        }
+
+        public bool ActualizarEstadoConsulta(int consultaId, string nuevoEstado)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "UPDATE Consulta SET Estado = @Estado WHERE ConsultaID = @ConsultaID";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Estado", nuevoEstado);
+                cmd.Parameters.AddWithValue("@ConsultaID", consultaId);
+
+                conn.Open();
+                int filasAfectadas = cmd.ExecuteNonQuery();
+                return filasAfectadas > 0;
             }
         }
     }
